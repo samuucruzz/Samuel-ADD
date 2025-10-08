@@ -1,4 +1,15 @@
-﻿function Menu{
+tch($numeroadivinar)
+{
+{$_ -le $a -and $_ -ge 1}{Write-Host "No adivinado, el número es menor que $a" -ForegroundColor red}
+{$_ -eq $a}{Write-Host "Número adivinado" -BackgroundColor Blue;break}
+{$_ -ge $a -and $_ -le 100}{Write-Host "No adivinado, el número es mayor que $a" -ForegroundColor red}
+}
+#Si el número está adivinado acabar de preguntar al usuario
+}while(!($numeroadivinar -eq $a))
+ 
+ 
+ 
+ function Menu{
     Write-Host "===== Menu Eleccion Script ====="
     Write-Host "16. Pizza"
     Write-Host "17. Dias"
@@ -422,6 +433,7 @@ function Crear-Grupo {
         Write-Host "Grupo '$nombre' creado."
     }
 }
+
 
 
 
