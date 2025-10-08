@@ -1,5 +1,119 @@
 $numero=Get-Random -minimum 1 -maximum 50
+m
 
+
+
+param(
+    [string]$Accion,
+    [string]$Param2,
+    [string]$Param3
+)
+
+Import-Module ActiveDirectory
+
+# Mostrar ayuda si no hay parámetros
+if (-not $Accion) {
+    Write-Host "Para usar este script debe añadir parámetros:"
+    Write-Host ".-Accion G - Crear Grupo"
+    Write-Host ".-Accion U - Crear Usuario" 
+    Write-Host ".-Accion M - Modificar Usuario"
+    Write-Host ".-Accion AG - Asignar Usuario a Grupo"
+    Write-Host ".-Accion LIST - Listar Objetos"
+    exit
+}
+
+# Acción G - Crear Grupo
+if ($Accion -eq "G") {
+    if (-not $Param2) { $Param2 = Read-Host "Ambito (Global/Universal/Local)" }
+    if (-not $Param3) { $Param3 = Read-Host "Tipo (Security/Distribution)" }
+    
+    $nombre = Read-Host "Nombre del grupo"
+    
+    if (Get-ADGroup -Filter "Name -eq '$nombre'" -ErrorAction SilentlyContinue) {
+        Write-Host "El grupo '$nombre' ya existe."
+    } else {
+        New-ADGroup -Name $nombre -GroupScope $Param2 -GroupCategory $Param3
+        Write-Host "Grupo '$nombre' creado."
+    }
+}
+
+# Acción U - Crear Usuario
+if ($Accion -eq "U") {
+    if (-not $Param2) { $Param2 = Read-Host "Nombre del usuario" }
+    if (-not $Param3) { $Param3 = Read-Host "OU" }
+    
+    if (Get-ADUser -Filter "Name -eq '$Param2'" -ErrorAction SilentlyContinue) {
+        Write-Host "El usuario '$Param2' ya existe."
+    } else {
+        $password = -join ((65..90) + (97..122) + (48..57) | Get-Random -Count 10 | % {[char]$_})
+        $securePass = ConvertTo-SecureString $password -AsPlainText -Force
+        
+        New-ADUser -Name $Param2 -Path $Param3 -AccountPassword $securePass -Enabled $true
+        Write-Host "Usuario '$Param2' creado. Contraseña: $password"
+    }
+}
+
+# Acción M - Modificar Usuario
+if ($Accion -eq "M") {
+    $usuario = Read-Host "Nombre del usuario"
+    
+    if (-not (Get-ADUser -Filter "Name -eq '$usuario'" -ErrorAction SilentlyContinue)) {
+        Write-Host "El usuario '$usuario' no existe."
+        exit
+    }
+    
+    if ($Param2) {
+        # Validar contraseña
+        if ($Param2.Length -lt 8) {
+            Write-Host "Error: La contraseña debe tener al menos 8 caracteres"
+        } elseif ($Param2 -notmatch "[A-Z]") {
+            Write-Host "Error: La contraseña debe tener mayúsculas"
+        } elseif ($Param2 -notmatch "[a-z]") {
+            Write-Host "Error: La contraseña debe tener minúsculas" 
+        } elseif ($Param2 -notmatch "[0-9]") {
+            Write-Host "Error: La contraseña debe tener números"
+        } elseif ($Param2 -notmatch "[^a-zA-Z0-9]") {
+            Write-Host "Error: La contraseña debe tener caracteres especiales"
+        } else {
+            $securePass = ConvertTo-SecureString $Param2 -AsPlainText -Force
+            Set-ADAccountPassword -Identity $usuario -NewPassword $securePass
+            Write-Host "Contraseña modificada."
+        }
+    }
+    
+    if ($Param3) {
+        Set-ADUser -Identity $usuario -Enabled ($Param3 -eq "S")
+        Write-Host "Cuenta habilitada: $($Param3 -eq 'S')"
+    }
+}
+
+# Acción AG - Asignar Usuario a Grupo
+if ($Accion -eq "AG") {
+    if (-not $Param2) { $Param2 = Read-Host "Nombre del usuario" }
+    if (-not $Param3) { $Param3 = Read-Host "Nombre del grupo" }
+    
+    try {
+        Add-ADGroupMember -Identity $Param3 -Members $Param2
+        Write-Host "Usuario '$Param2' agregado al grupo '$Param3'."
+    } catch {
+        Write-Host "Error: Usuario o grupo no existe."
+    }
+}
+
+# Acción LIST - Listar Objetos
+if ($Accion -eq "LIST") {
+    if (-not $Param2) { $Param2 = Read-Host "Tipo (Usuarios/Grupos/Ambos)" }
+    
+    if ($Param2 -eq "Usuarios" -or $Param2 -eq "Ambos") {
+        Write-Host "=== USUARIOS ==="
+        Get-ADUser -Filter * | Select-Object Name, Enabled
+    }
+    
+    if ($Param2 -eq "Grupos" -or $Param2 -eq "Ambos") {
+        Write-Host "=== GRUPOS ==="
+        Get-ADGroup -Filter * | Select-Object Name, GroupScope
+    }
+}
 $intentos=0
 $maximos_intentos=7
 
@@ -454,6 +568,7 @@ function Crear-Grupo {
         Write-Host "Grupo '$nombre' creado."
     }
 }
+
 
 
 
