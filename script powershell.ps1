@@ -5,6 +5,11 @@
     Write-Host "18. Menu_usuarios"
     Write-Host "19. Menu_grupos"
     Write-Host "20. Diskp"
+    Write-Host "21. Contraseña"
+    Write-Host "22. Fibonacci"
+    Write-Host "23. Fibonacci_recursiva"
+    Write-Host "24. Monitoreo"
+    Write-Host "25. Alerta_Espacio"
     Write-Host "==== ==== ==== ==== ==== ==== ===="
     }
 
@@ -190,59 +195,154 @@ while ($opcion -ne 0)
 
 }
 
-function diskp {
+function diskp{
 
+  $ndisco = Read-Host "Que disco quieres utilizar?"
+  $tamaño = (Get-Disk -Number $ndisco| Select-Object Size).Size /1GB 
+  Write-Host "El disco $ndisco tiene un espacio de $tamaño GB."
 
-$op = Read-Host "¿Quieres ver la lista de discos que tienes (Sí/No) ?"
+  @"
+  sel disk $ndisco
+  clean
+  conv gpt
+  con dyn
+"@ | diskpart
 
-if($op -eq "Si"){
+  $volumen = 0
+  for ($disco = 1;$disco -le $tamaño;$disco++){
+    $volumen++
 
-$lista_discos = Get-PhysicalDisk -ObjectId *
+    @"
+    sel disk $ndisco
+    create volume simple size = 1024
+    format fs='NTFS' label='Volumen $volumen' 'quick'
 
-Write-Host = $lista_discos
-$discos = Read-Host "Introduce el numero de discos a utilizar"
+"@ | diskpart
+  }
+     
+}
 
+function contraseña{
 
+    $intento = Read-Host "Escriba una contraseña y le diremos si es valida"
 
+    if($intento -notmatch "[qwertyuiopñlkjhgf]"){
+    Write-Host "Vaya mierda de contraseña" -ForeGroundColor Red
+    break
+    }
 
+    if($intento -notmatch "[QWERTYUIOPÑLKJHGF]"){
+    Write-Host "Vaya mierda de contraseña" -ForeGroundColor Red
+    break
+    }
 
+    if($intento -notmatch "[123456]"){
+    Write-Host "Vaya mierda de contraseña" -ForeGroundColor Red
+    break
+    }
 
+    if($intento -notmatch "[,._-]"){
+    Write-Host "Vaya mierda de contraseña" -ForeGroundColor Red
+    break
+    }
 
-elseif($op -eq "No"){
+    if($intento.Length -ge 8){
+    Write-Host "Creeeeema" -ForeGroundColor Green
+    break
+    }
 
-Write-Host "Saliendo..."}
+    Write-Host "Vaya chusta de contraseña" -ForeGroundColor Red
+
 
 }
 
+function Fibonacci{
 
+    $resul = Read-Host "Elige cuantas veces hacer el fibonacci"
+    $intentos = 0
 
+    $num1 = 0
+    $num2 = 1
+    $combi = 0,1
 
+    while($intentos -lt ($resul - 2)){
 
+        if($num1 -le $num2){
+            $suma1 = $num1 + $num2
+            $num1 = $suma1
+            $combi += $num1
+        }else{
 
+            $suma2 = $num1 + $num2
+            $num2 = $suma2
+            $combi += $num2
 
+        }
 
+        $intentos++
+    
 }
 
+    if($resul -eq 1){
+        $combi = 0
+
+    }elseif($resul -eq 0){
+        $combi = "Metete un dedito en el culo"
+
+    }
+    Write-Host $combi
+
+}   
+
+function Fibonacci_recursiva(){
+
+    function Fibonacci2($num){
+        
+        if ($num -lt 2){
+    
+            return $num
+
+        }else{
+
+            return (Fibonacci2 ($num - 1)) + (Fibonacci2 ($num - 2))
+
+        }
+    }
+
+    $sel = Read-Host "Cuantas veces se va a repetir?"
+
+    for($i= 0;$i -lt $sel;$i++){
+        Write-Host "$(Fibonacci2 $i)"
+    }
 
 
+} 
+
+function monitoreo{
+
+    $i = 0
+    $numeros = 0
+
+    while ($i -lt 6) {
+        $uso = (Get-CimInstance Win32_Processor).LoadPercentage
+        Start-Sleep -Seconds 5
+
+        Write-Host "Uso de la CPU: ",$uso
+
+        $numeros = $numeros + $uso
 
 
+        $i++
+    }
 
 
+$media = $numeros / 6
+Write-Host "la media es: $media"
+}
 
+function AlertaEspacio{
 
-
-
-
-
-
-
-
-
-
-
-
-
+}
     
 do{
     Menu
@@ -250,10 +350,15 @@ do{
 
     switch($seleccion){
         "16"{Pizza}
-        "17"{dias}
-        "18"{menu_usuarios}
-        "19"{menu_grupos}
-        "20"{diskp}
+        "17"{Dias}
+        "18"{Menu_usuarios}
+        "19"{Menu_grupos}
+        "20"{Diskp}
+        "21"{Contraseña}
+        "22"{Fibonacci}
+        "23"{Fibonacci_recursiva}
+        "24"{Monitoreo}
+        "25"{Alerta_Espacio}
     }
 }
 while ($seleccion -ne "0")
