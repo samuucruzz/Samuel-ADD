@@ -335,6 +335,50 @@ function monitoreo{
         $i++
     }
 
+# Función Agenda Telefónica
+function Menu-Agenda {
+    $agenda = @{}
+    
+    do {
+        Clear-Host
+        Write-Host "AGENDA TELEFONICA"
+        Write-Host "1. Añadir/Modificar"
+        Write-Host "2. Buscar"
+        Write-Host "3. Borrar"
+        Write-Host "4. Listar"
+        Write-Host "0. Salir"
+        
+        $op = Read-Host "Opción"
+        
+        switch ($op) {
+            "1" {
+                $nombre = Read-Host "Nombre"
+                $telefono = Read-Host "Teléfono"
+                $agenda[$nombre] = $telefono
+                Write-Host "Contacto guardado."
+            }
+            "2" {
+                $busqueda = Read-Host "Buscar"
+                $agenda.GetEnumerator() | Where-Object { $_.Key -like "$busqueda*" } | ForEach-Object {
+                    Write-Host "$($_.Key): $($_.Value)"
+                }
+            }
+            "3" {
+                $nombre = Read-Host "Nombre a borrar"
+                if ($agenda.Remove($nombre)) {
+                    Write-Host "Contacto borrado."
+                }
+            }
+            "4" {
+                $agenda.GetEnumerator() | ForEach-Object {
+                    Write-Host "$($_.Key): $($_.Value)"
+                }
+            }
+        }
+        if ($op -ne "0") { Read-Host "Enter para continuar" }
+    } while ($op -ne "0")
+}
+
 
 $media = $numeros / 6
 Write-Host "la media es: $media"
@@ -362,3 +406,4 @@ do{
     }
 }
 while ($seleccion -ne "0")
+
