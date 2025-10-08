@@ -407,3 +407,21 @@ do{
 }
 while ($seleccion -ne "0")
 
+
+
+# Función para crear grupos
+function Crear-Grupo {
+   $nombre = Read-Host "Nombre del grupo"
+   if (-not $Param2) {$Param2 = Read-Host "Ambito (Global/Universal/DomainLocal)"}
+   if (-not $Param3) {$Param3 = Read-Host "Tipo (Security/Distribution)"}
+    
+    if (Get-ADGroup -Filter "Name -eq '$nombre'" -ErrorAction SilentlyContinue) {
+        Write-Host "El grupo '$nombre' ya existe."
+    } else {
+        New-ADGroup -Name $nombre -GroupScope $Param2 -GroupCategory $Param3
+        Write-Host "Grupo '$nombre' creado."
+    }
+}
+
+
+
